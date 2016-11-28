@@ -1,4 +1,5 @@
 import Rx from 'rxjs/Rx';
+import {createSubscriber} from "./lib/util"
 
 // ----------
 // Part 1
@@ -10,8 +11,8 @@ import Rx from 'rxjs/Rx';
 
 // promise.then(item => console.log(item))
 
-// const simple$ = new Rx.Observable(observer => {
-//     console.log("Generating observables")
+// const simple$ = new Rx.sourceObservable$(observer => {
+//     console.log("Generating sourceObservable$s")
 //     setTimeout(() => {
 //         observer.next("An Item!")
 //         setTimeout(() => {
@@ -21,7 +22,7 @@ import Rx from 'rxjs/Rx';
 //     }, 1000);
 // })
 
-// const error$ = new Rx.Observable(observer => {
+// const error$ = new Rx.sourceObservable$(observer => {
 //     observer.error(new Error({whoa: "WHOA"}))
 // })
 
@@ -38,3 +39,37 @@ import Rx from 'rxjs/Rx';
 //         complete: () => console.log("two.complete")
 //     })
 // }, 3000);
+
+function createInterval$(time){
+    return new Rx.Observable(observer => {
+        let index = 0;
+        let interval = setInterval(() => {
+            console.log(`Generating ${index}`)
+            observer.next(index++)
+        }, time)
+
+        return () => { clearInterval(interval) }
+    })
+}
+
+
+
+function take$(sourceObservable$, amount){
+    return new Rx.Observable(observer => {
+        let count = 0
+        console.log( `count ${count}`)
+        const subscription = sourceObservable$.subscribe({
+            next: item => {  
+                (++count >= amount) ?
+                    observer.complete() : observer.next(item) },
+            error: error => {observer.error(error)},
+            complete: ()=> {observer.complete()}
+        })
+        return () => subscription.unsubscribe()
+    })
+}
+
+
+const everySecond$ = createInterval$(1000)
+const firstFiveSeconds$ = take$(everySecond$, 5)
+firstFiveSeconds$.subscribe(createSubscriber("one"))
