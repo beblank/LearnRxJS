@@ -15,9 +15,9 @@ gulp.task("scripts:server", () => {
         .pipe(gulp.dest("./build"))
 })
 
-gulp.task("watch" , gulp.series(
+gulp.task("watch:server" , gulp.series(
     "scripts:server",
-    () =>  gulp.watch("./src-server/**/*.js", gulp.series("scripts:server "))))
+    () =>  gulp.watch("./src-server/**/*.js", gulp.series("scripts:server"))))
 
 gulp.task("scripts:client", () => {
     const files = fs.readdirSync("./src-client")
